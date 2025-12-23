@@ -10,11 +10,19 @@ function Navbar() {
     navigate("/login", { replace: true });
   };
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `nav-link px-3 ${isActive ? "active fw-semibold text-info" : "text-light"}`;
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary">
-      <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">
-          Batistack <span className="text-info">Clean Heat</span> Rebate Portal
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm border-bottom border-secondary">
+      <div className="container-fluid px-4">
+        <Link
+          className="navbar-brand fw-bold d-flex align-items-center gap-2"
+          to="/"
+        >
+          Batistack
+          <span className="badge bg-info text-dark">Clean Heat</span>
+          <span className="text-secondary">Rebate Portal</span>
         </Link>
 
         <button
@@ -30,52 +38,51 @@ function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="mainNavbar">
-          <ul className="navbar-nav ms-auto align-items-lg-center">
+          <ul className="navbar-nav ms-auto align-items-lg-center gap-lg-1">
             {!isAuthenticated ? (
               <>
                 <li className="nav-item">
-                  <NavLink
-                    to="/login"
-                    className={({ isActive }) =>
-                      "nav-link" + (isActive ? " active fw-semibold" : "")
-                    }
-                  >
+                  <NavLink to="/login" className={navLinkClass}>
                     Log in
                   </NavLink>
                 </li>
+
                 <li className="nav-item ms-lg-2">
-                  <NavLink
-                    to="/register"
-                    className={({ isActive }) =>
-                      "btn btn-outline-info ms-lg-1" + (isActive ? " active" : "")
-                    }
-                  >
+                  <NavLink to="/register" className="btn btn-outline-info px-3">
                     Register
                   </NavLink>
                 </li>
               </>
             ) : (
               <>
-                <li className="nav-item me-2 d-none d-lg-block">
+                <li className="nav-item d-none d-lg-block me-2">
                   <span className="navbar-text text-secondary small">
-                    {user?.name}
+                    Signed in as{" "}
+                    <strong className="text-light">{user?.name}</strong>
                   </span>
                 </li>
-                   <NavLink
-                    to="/clients"
-                    className="navbar-text text-secondary small"
-                  >
+
+                <li className="nav-item">
+                  <NavLink to="/clients" className={navLinkClass}>
                     Clients
                   </NavLink>
-                 
-                   <NavLink
-                    to="/applications_pages"
-                    className="navbar-text text-secondary small"
-                  >
+                </li>
+
+                <li className="nav-item">
+                  <NavLink to="/applications_pages" className={navLinkClass}>
                     Applications
                   </NavLink>
+                </li>
+
+                <li className="nav-item d-none d-lg-block mx-2">
+                  <span className="text-secondary">|</span>
+                </li>
+
                 <li className="nav-item">
-                  <button className="btn btn-outline-light" onClick={handleSignOut}>
+                  <button
+                    className="btn btn-outline-light btn-sm px-3"
+                    onClick={handleSignOut}
+                  >
                     Sign out
                   </button>
                 </li>

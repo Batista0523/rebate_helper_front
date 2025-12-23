@@ -93,7 +93,6 @@ function CreateApplication() {
         }}
       >
         <div className="d-flex flex-column gap-4">
-
           <motion.div
             variants={fade}
             initial="hidden"
@@ -104,9 +103,7 @@ function CreateApplication() {
             <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
               Client Information
             </h4>
-
             <div className="row g-4">
-
               <div className="col-md-6">
                 <p className="mb-1 text-secondary small">Full Name</p>
                 <input
@@ -181,9 +178,7 @@ function CreateApplication() {
                 <input
                   className="form-control"
                   value={formData.building_sqft}
-                  onChange={(e) =>
-                    handleInput("building_sqft", e.target.value)
-                  }
+                  onChange={(e) => handleInput("building_sqft", e.target.value)}
                 />
               </div>
 
@@ -198,6 +193,7 @@ function CreateApplication() {
                 />
               </div>
             </div>
+
           </motion.div>
 
           <motion.div
@@ -246,7 +242,9 @@ function CreateApplication() {
               </div>
 
               <div className="col-md-6">
-                <p className="mb-1 text-secondary small">Client Pays After Rebate</p>
+                <p className="mb-1 text-secondary small">
+                  Client Pays After Rebate
+                </p>
                 <input
                   className="form-control"
                   value={formData.total_client_pay_after_rebate}
@@ -265,7 +263,9 @@ function CreateApplication() {
             className="card border-0 shadow-lg p-4"
             style={{ borderRadius: "14px" }}
           >
-            <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>Notes</h4>
+            <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
+              Notes
+            </h4>
 
             <textarea
               className="form-control"
@@ -278,7 +278,6 @@ function CreateApplication() {
         </div>
 
         <div className="d-flex flex-column gap-4">
-
           <motion.div
             variants={fade}
             initial="hidden"
@@ -308,7 +307,9 @@ function CreateApplication() {
                   checked={formData[field]}
                   onChange={() => handleCheckbox(field)}
                 />
-                <span className="text-capitalize">{field.replace(/_/g, " ")}</span>
+                <span className="text-capitalize">
+                  {field.replace(/_/g, " ")}
+                </span>
               </div>
             ))}
           </motion.div>

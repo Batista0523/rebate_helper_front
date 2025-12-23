@@ -135,7 +135,7 @@ function ApplicationsPage() {
         <div className="col-md-4">
           <motion.div variants={popCard} className="card shadow-sm border-0">
             <div className="card-body">
-              <div className="small text-secondary">YTD Approved</div>
+              <div className="small text-secondary">YTD Eligible</div>
               <div className="h4">{currency.format(ytdApproved)}</div>
             </div>
           </motion.div>
@@ -154,10 +154,10 @@ function ApplicationsPage() {
         </div>
       </div>
 
-      {/* ERROR */}
+   
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {/* CARDS */}
+     
       <div className="row g-3">
         {filtered.map((a) => {
           const initials = a.full_name
@@ -200,7 +200,7 @@ function ApplicationsPage() {
                     </div>
 
                     <div className="d-flex justify-content-between">
-                      <span className="text-secondary small">Approved</span>
+                      <span className="text-secondary small">Eligible</span>
                       <strong>
                         {a.approved_rebate_amount
                           ? currency.format(Number(a.approved_rebate_amount))

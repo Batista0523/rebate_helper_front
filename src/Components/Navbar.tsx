@@ -62,11 +62,11 @@ function Navbar() {
                   </span>
                 </li>
 
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <NavLink to="/clients" className={navLinkClass}>
                     Clients
                   </NavLink>
-                </li>
+                </li> */}
 
                 <li className="nav-item">
                   <NavLink to="/applications_pages" className={navLinkClass}>

@@ -170,7 +170,7 @@ function ApplicationsPage() {
           return (
             <div key={a.id} className="col-12 col-md-6 col-lg-4">
               <Link
-                to={`/applications/${a.id}`}
+                to={`/applications_pages/${a.id}`}
                 className="text-decoration-none text-dark"
               >
                 <motion.div variants={popCard} className="card border-0 shadow-sm h-100">

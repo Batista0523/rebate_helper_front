@@ -39,7 +39,7 @@ function App() {
         <Route path="/register" element={<GuestOnly><Register /></GuestOnly>} />
         {/* <Route path="/clients" element={<Clients />} /> */}
         <Route path="/newClients" element={<NewClient />} />
-         <Route path="/applications/:id" element={<OneApplication />} />
+         <Route path="/applications_pages/:id" element={<OneApplication />} />
          <Route path="/newApplication" element={<CreateApplication />} />
         <Route path="/applications_pages" element={<ApplicationsPage />} />
       </Routes>

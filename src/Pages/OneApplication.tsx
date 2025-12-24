@@ -4,6 +4,15 @@ import { motion } from "framer-motion";
 
 function OneApplication() {
   const { id } = useParams();
+
+  if (!id || isNaN(Number(id))) {
+    return (
+      <div className="container py-5">
+        <div className="alert alert-danger">Invalid application ID</div>
+      </div>
+    );
+  }
+
   const navigate = useNavigate();
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -24,7 +33,7 @@ function OneApplication() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${baseUrl}/applications/${id}`);
+        const res = await fetch(`${baseUrl}/applications/${Number(id)}`);
         const data = await res.json();
 
         if (!data.success) return setError("Application not found");
@@ -32,7 +41,28 @@ function OneApplication() {
         setApp(data.payload);
         setFormData(data.payload);
 
-        setNotes(data.payload.notes ? JSON.parse(data.payload.notes) : []);
+        let parsedNotes: any[] = [];
+
+        const rawNotes = data.payload.notes;
+
+        if (Array.isArray(rawNotes)) {
+          parsedNotes = rawNotes;
+        } else if (typeof rawNotes === "string") {
+          try {
+            parsedNotes = JSON.parse(rawNotes);
+          } catch {
+            parsedNotes = [
+              {
+                text: rawNotes,
+                date: data.payload.created_at,
+              },
+            ];
+          }
+        } else {
+          parsedNotes = [];
+        }
+
+        setNotes(parsedNotes);
 
         const s = {
           acknowledgment_form: data.payload.acknowledgment_form,
@@ -399,6 +429,49 @@ function OneApplication() {
                 )}
               </div>
             </div>
+          </motion.div>
+          <motion.div
+            variants={fade}
+            initial="hidden"
+            animate="show"
+            className="card border-0 shadow-lg p-4"
+            style={{ borderRadius: "14px" }}
+          >
+            <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
+              System Equipment
+            </h4>
+
+            {!editMode ? (
+              app.condenser_models && app.condenser_models.length > 0 ? (
+                <ul className="list-group list-group-flush">
+                  {app.condenser_models.map((model: string, idx: number) => (
+                    <li key={idx} className="list-group-item px-0">
+                      {model}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-secondary fst-italic">
+                  No condenser models listed.
+                </p>
+              )
+            ) : (
+              <textarea
+                className="form-control"
+                rows={4}
+                placeholder="One model per line"
+                value={(formData.condenser_models || []).join("\n")}
+                onChange={(e) =>
+                  handleInput(
+                    "condenser_models",
+                    e.target.value
+                      .split("\n")
+                      .map((m) => m.trim())
+                      .filter(Boolean)
+                  )
+                }
+              />
+            )}
           </motion.div>
 
           {/* NOTES SECTION – NOW HERE ABOVE SIDEBAR NOT BELOW BOOLEAN */}

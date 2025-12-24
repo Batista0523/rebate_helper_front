@@ -105,11 +105,11 @@ function OneApplication() {
   const toggleStep = (field: string) =>
     setSteps((p: any) => ({ ...p, [field]: !p[field] }));
 
-  const saveAll = async () => {
+  const saveAll = async (overrideNotes?: any[]) => {
     const body = {
       ...formData,
       ...steps,
-      notes: JSON.stringify(notes),
+      notes: JSON.stringify(overrideNotes ?? notes),
     };
 
     const res = await fetch(`${baseUrl}/applications/${id}`, {
@@ -121,11 +121,9 @@ function OneApplication() {
     const data = await res.json();
 
     if (data.success) {
-      alert("Application updated!");
-
       setApp(data.payload);
       setFormData(data.payload);
-
+      setNotes(data.payload.notes ? JSON.parse(data.payload.notes) : []);
       setEditMode(false);
     }
   };
@@ -139,10 +137,11 @@ function OneApplication() {
     };
 
     const updated = [entry, ...notes];
+
     setNotes(updated);
     setNewNote("");
 
-    await saveAll();
+    await saveAll(updated);
   };
 
   const deleteApplication = async () => {
@@ -158,304 +157,374 @@ function OneApplication() {
     navigate("/applications_pages");
   };
 
- return (
-  <main className="container-fluid py-4" style={{ maxWidth: "1400px" }}>
+  return (
+    <main className="container-fluid py-4" style={{ maxWidth: "1400px" }}>
+      <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+          {!editMode ? (
+            <>
+              <h1 className="fw-bold mb-1" style={{ color: "#0F172A" }}>
+                {app.full_name}
+              </h1>
+              <div className="text-secondary">{app.address}</div>
+            </>
+          ) : (
+            <>
+              <input
+                className="form-control form-control-lg mb-2"
+                value={formData.full_name}
+                onChange={(e) => handleInput("full_name", e.target.value)}
+              />
+              <input
+                className="form-control"
+                value={formData.address}
+                onChange={(e) => handleInput("address", e.target.value)}
+              />
+            </>
+          )}
+        </div>
 
-    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-      <div>
-        {!editMode ? (
-          <>
-            <h1 className="fw-bold mb-1" style={{ color: "#0F172A" }}>
-              {app.full_name}
-            </h1>
-            <div className="text-secondary">{app.address}</div>
-          </>
-        ) : (
-          <>
-            <input
-              className="form-control form-control-lg mb-2"
-              value={formData.full_name}
-              onChange={(e) => handleInput("full_name", e.target.value)}
-            />
-            <input
-              className="form-control"
-              value={formData.address}
-              onChange={(e) => handleInput("address", e.target.value)}
-            />
-          </>
-        )}
-      </div>
+        <div className="d-flex gap-2">
+          <Link to="/applications_pages" className="btn btn-outline-secondary">
+            ← Back
+          </Link>
 
-      <div className="d-flex gap-2">
-        <Link to="/applications_pages" className="btn btn-outline-secondary">
-          ← Back
-        </Link>
-
-        {!editMode ? (
-          <button className="btn btn-primary px-4" onClick={() => setEditMode(true)}>
-            Edit
-          </button>
-        ) : (
-          <>
-            <button className="btn btn-success px-4" onClick={saveAll}>
-              Save
-            </button>
+          {!editMode ? (
             <button
-              className="btn btn-outline-danger px-4"
-              onClick={() => {
-                setFormData(app);
-                setEditMode(false);
-              }}
+              className="btn btn-primary px-4"
+              onClick={() => setEditMode(true)}
             >
-              Cancel
+              Edit
             </button>
-          </>
-        )}
+          ) : (
+            <>
+              <button
+                className="btn btn-success px-4"
+                onClick={() => saveAll()}
+              >
+                Save
+              </button>
+              <button
+                className="btn btn-outline-danger px-4"
+                onClick={() => {
+                  setFormData(app);
+                  setEditMode(false);
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
 
-        <button className="btn btn-danger px-4" onClick={deleteApplication}>
-          Delete
-        </button>
+          <button className="btn btn-danger px-4" onClick={deleteApplication}>
+            Delete
+          </button>
+        </div>
       </div>
-    </div>
 
-    {/* GRID LAYOUT SUPER PROFESIONAL */}
-    <div className="row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "2rem" }}>
+      {/* GRID LAYOUT SUPER PROFESIONAL */}
+      <div
+        className="row"
+        style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "2rem" }}
+      >
+        {/* LEFT GRID: FINANCIAL + CLIENT + NOTES */}
+        <div className="d-flex flex-column gap-4">
+          <motion.div
+            variants={fade}
+            initial="hidden"
+            animate="show"
+            className="card border-0 shadow-lg p-4"
+            style={{ borderRadius: "14px" }}
+          >
+            <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
+              Financial Summary
+            </h4>
 
-      {/* LEFT GRID: FINANCIAL + CLIENT + NOTES */}
-      <div className="d-flex flex-column gap-4">
+            <div className="p-4 rounded" style={{ background: "#F8FAFC" }}>
+              <div className="d-flex justify-content-between mb-3">
+                <span className="text-secondary">Offered</span>
+                {!editMode ? (
+                  <strong>{currency.format(offered)}</strong>
+                ) : (
+                  <input
+                    className="form-control w-50 text-end"
+                    value={formData.offered_rebate_amount}
+                    onChange={(e) =>
+                      handleInput("offered_rebate_amount", e.target.value)
+                    }
+                  />
+                )}
+              </div>
 
-        <motion.div
-          variants={fade}
-          initial="hidden"
-          animate="show"
-          className="card border-0 shadow-lg p-4"
-          style={{ borderRadius: "14px" }}
-        >
-          <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
-            Financial Summary
-          </h4>
+              <div className="d-flex justify-content-between mb-3">
+                <span className="text-secondary">Approved</span>
+                {!editMode ? (
+                  <strong>{currency.format(approved)}</strong>
+                ) : (
+                  <input
+                    className="form-control w-50 text-end"
+                    value={formData.approved_rebate_amount}
+                    onChange={(e) =>
+                      handleInput("approved_rebate_amount", e.target.value)
+                    }
+                  />
+                )}
+              </div>
 
-          <div className="p-4 rounded" style={{ background: "#F8FAFC" }}>
-            <div className="d-flex justify-content-between mb-3">
-              <span className="text-secondary">Offered</span>
-              {!editMode ? (
-                <strong>{currency.format(offered)}</strong>
+              <div
+                className="rounded text-white mt-4 text-center fw-semibold py-3"
+                style={{ background: deltaStatus.color, fontSize: "1.1rem" }}
+              >
+                {deltaStatus.text}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={fade}
+            initial="hidden"
+            animate="show"
+            className="card border-0 shadow-lg p-4"
+            style={{ borderRadius: "14px" }}
+          >
+            <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
+              Client Information
+            </h4>
+
+            <div className="row g-4">
+              <div className="col-md-6">
+                <p className="mb-1 text-secondary small">Email</p>
+                {!editMode ? (
+                  <p className="fw-semibold">{app.email || "—"}</p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.email}
+                    onChange={(e) => handleInput("email", e.target.value)}
+                  />
+                )}
+              </div>
+
+              <div className="col-md-6">
+                <p className="mb-1 text-secondary small">Phone</p>
+                {!editMode ? (
+                  <p className="fw-semibold">{app.phone_number || "—"}</p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.phone_number}
+                    onChange={(e) =>
+                      handleInput("phone_number", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="col-md-6">
+                <p className="mb-1 text-secondary small">Electricity Acct</p>
+                {!editMode ? (
+                  <p className="fw-semibold">{app.electricity_acct || "—"}</p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.electricity_acct}
+                    onChange={(e) =>
+                      handleInput("electricity_acct", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="col-md-6">
+                <p className="mb-1 text-secondary small">Eligibility Key</p>
+                {!editMode ? (
+                  <p className="fw-semibold">
+                    {app.coned_eligibility_key || "—"}
+                  </p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.coned_eligibility_key}
+                    onChange={(e) =>
+                      handleInput("coned_eligibility_key", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="col-md-4">
+                <p className="mb-1 text-secondary small">Year Built</p>
+                {!editMode ? (
+                  <p className="fw-semibold">
+                    {app.building_year_built || "—"}
+                  </p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.building_year_built}
+                    onChange={(e) =>
+                      handleInput("building_year_built", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="col-md-4">
+                <p className="mb-1 text-secondary small">Building Sqft</p>
+                {!editMode ? (
+                  <p className="fw-semibold">{app.building_sqft || "—"}</p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.building_sqft}
+                    onChange={(e) =>
+                      handleInput("building_sqft", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="col-md-4">
+                <p className="mb-1 text-secondary small">Conditioned Sqft</p>
+                {!editMode ? (
+                  <p className="fw-semibold">{app.conditioned_sqft || "—"}</p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.conditioned_sqft}
+                    onChange={(e) =>
+                      handleInput("conditioned_sqft", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* NOTES SECTION – NOW HERE ABOVE SIDEBAR NOT BELOW BOOLEAN */}
+          <motion.div
+            variants={fade}
+            initial="hidden"
+            animate="show"
+            className="card border-0 shadow-lg p-4"
+            style={{ borderRadius: "14px" }}
+          >
+            <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
+              Notes
+            </h4>
+
+            <textarea
+              className="form-control mb-3"
+              rows={3}
+              placeholder="Add a note..."
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+            />
+
+            <button
+              className="btn btn-outline-primary w-100 mb-3"
+              onClick={addNote}
+            >
+              + Add Note
+            </button>
+
+            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+              {notes.length === 0 ? (
+                <p className="text-secondary fst-italic">No notes yet.</p>
               ) : (
-                <input
-                  className="form-control w-50 text-end"
-                  value={formData.offered_rebate_amount}
-                  onChange={(e) => handleInput("offered_rebate_amount", e.target.value)}
-                />
+                notes.map((n, i) => (
+                  <div key={i} className="mb-3 pb-2 border-bottom">
+                    <div className="small text-secondary">
+                      {new Date(n.date).toLocaleString()}
+                    </div>
+                    <div className="fw-semibold">{n.text}</div>
+                  </div>
+                ))
               )}
             </div>
+          </motion.div>
+        </div>
 
-            <div className="d-flex justify-content-between mb-3">
-              <span className="text-secondary">Approved</span>
-              {!editMode ? (
-                <strong>{currency.format(approved)}</strong>
-              ) : (
-                <input
-                  className="form-control w-50 text-end"
-                  value={formData.approved_rebate_amount}
-                  onChange={(e) => handleInput("approved_rebate_amount", e.target.value)}
-                />
-              )}
-            </div>
+        <div className="d-flex flex-column gap-4">
+          <motion.div
+            variants={fade}
+            initial="hidden"
+            animate="show"
+            className="card border-0 shadow-lg p-4 text-center"
+            style={{ borderRadius: "14px" }}
+          >
+            <h5 className="fw-bold mb-3">Progress</h5>
 
             <div
-              className="rounded text-white mt-4 text-center fw-semibold py-3"
-              style={{ background: deltaStatus.color, fontSize: "1.1rem" }}
+              className="position-relative mx-auto mb-3"
+              style={{ width: "160px", height: "160px" }}
             >
-              {deltaStatus.text}
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          variants={fade}
-          initial="hidden"
-          animate="show"
-          className="card border-0 shadow-lg p-4"
-          style={{ borderRadius: "14px" }}
-        >
-          <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
-            Client Information
-          </h4>
-
-          <div className="row g-4">
-            <div className="col-md-6">
-              <p className="mb-1 text-secondary small">Email</p>
-              {!editMode ? (
-                <p className="fw-semibold">{app.email || "—"}</p>
-              ) : (
-                <input className="form-control" value={formData.email} onChange={(e)=>handleInput("email",e.target.value)} />
-              )}
-            </div>
-
-            <div className="col-md-6">
-              <p className="mb-1 text-secondary small">Phone</p>
-              {!editMode ? (
-                <p className="fw-semibold">{app.phone_number || "—"}</p>
-              ) : (
-                <input className="form-control" value={formData.phone_number} onChange={(e)=>handleInput("phone_number",e.target.value)} />
-              )}
+              <svg width="160" height="160">
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke="#E5E7EB"
+                  strokeWidth="12"
+                  fill="transparent"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke="#16A34A"
+                  strokeWidth="12"
+                  fill="transparent"
+                  strokeDasharray={440}
+                  strokeDashoffset={440 - (440 * progress) / 100}
+                  strokeLinecap="round"
+                  style={{ transition: "0.5s" }}
+                />
+              </svg>
+              <div
+                className="position-absolute top-50 start-50 translate-middle fw-bold"
+                style={{ fontSize: "1.6rem" }}
+              >
+                {progress}%
+              </div>
             </div>
 
-            <div className="col-md-6">
-              <p className="mb-1 text-secondary small">Electricity Acct</p>
-              {!editMode ? (
-                <p className="fw-semibold">{app.electricity_acct || "—"}</p>
-              ) : (
-                <input className="form-control" value={formData.electricity_acct} onChange={(e)=>handleInput("electricity_acct",e.target.value)} />
-              )}
+            <div className="small text-secondary">
+              {complete} / {total} steps completed
             </div>
+          </motion.div>
 
-            <div className="col-md-6">
-              <p className="mb-1 text-secondary small">Eligibility Key</p>
-              {!editMode ? (
-                <p className="fw-semibold">{app.coned_eligibility_key || "—"}</p>
-              ) : (
-                <input className="form-control" value={formData.coned_eligibility_key} onChange={(e)=>handleInput("coned_eligibility_key",e.target.value)} />
-              )}
-            </div>
+          <motion.div
+            variants={fade}
+            initial="hidden"
+            animate="show"
+            className="card border-0 shadow-lg p-4"
+            style={{ borderRadius: "14px" }}
+          >
+            <h5 className="fw-bold mb-3">Required Steps</h5>
 
-            <div className="col-md-4">
-              <p className="mb-1 text-secondary small">Year Built</p>
-              {!editMode ? (
-                <p className="fw-semibold">{app.building_year_built || "—"}</p>
-              ) : (
-                <input className="form-control" value={formData.building_year_built} onChange={(e)=>handleInput("building_year_built",e.target.value)} />
-              )}
-            </div>
+            {Object.keys(steps).map((key) => (
+              <div key={key} className="mb-2 d-flex align-items-center">
+                <input
+                  type="checkbox"
+                  className="form-check-input me-2"
+                  checked={steps[key]}
+                  onChange={() => toggleStep(key)}
+                />
+                <span className="text-capitalize">
+                  {key.replace(/_/g, " ")}
+                </span>
+              </div>
+            ))}
 
-            <div className="col-md-4">
-              <p className="mb-1 text-secondary small">Building Sqft</p>
-              {!editMode ? (
-                <p className="fw-semibold">{app.building_sqft || "—"}</p>
-              ) : (
-                <input className="form-control" value={formData.building_sqft} onChange={(e)=>handleInput("building_sqft",e.target.value)} />
-              )}
-            </div>
-
-            <div className="col-md-4">
-              <p className="mb-1 text-secondary small">Conditioned Sqft</p>
-              {!editMode ? (
-                <p className="fw-semibold">{app.conditioned_sqft || "—"}</p>
-              ) : (
-                <input className="form-control" value={formData.conditioned_sqft} onChange={(e)=>handleInput("conditioned_sqft",e.target.value)} />
-              )}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* NOTES SECTION – NOW HERE ABOVE SIDEBAR NOT BELOW BOOLEAN */}
-        <motion.div
-          variants={fade}
-          initial="hidden"
-          animate="show"
-          className="card border-0 shadow-lg p-4"
-          style={{ borderRadius: "14px" }}
-        >
-          <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>Notes</h4>
-
-          <textarea
-            className="form-control mb-3"
-            rows={3}
-            placeholder="Add a note..."
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-          />
-
-          <button className="btn btn-outline-primary w-100 mb-3" onClick={addNote}>
-            + Add Note
-          </button>
-
-          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-            {notes.length === 0 ? (
-              <p className="text-secondary fst-italic">No notes yet.</p>
-            ) : (
-              notes.map((n, i) => (
-                <div key={i} className="mb-3 pb-2 border-bottom">
-                  <div className="small text-secondary">{new Date(n.date).toLocaleString()}</div>
-                  <div className="fw-semibold">{n.text}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </motion.div>
-
+            <button className="btn btn-success px-4" onClick={() => saveAll()}>
+              Save
+            </button>
+          </motion.div>
+        </div>
       </div>
-
-      {/* RIGHT GRID: SIDEBAR ONLY */}
-      <div className="d-flex flex-column gap-4">
-
-        <motion.div
-          variants={fade}
-          initial="hidden"
-          animate="show"
-          className="card border-0 shadow-lg p-4 text-center"
-          style={{ borderRadius: "14px" }}
-        >
-          <h5 className="fw-bold mb-3">Progress</h5>
-
-          <div className="position-relative mx-auto mb-3" style={{ width: "160px", height: "160px" }}>
-            <svg width="160" height="160">
-              <circle cx="80" cy="80" r="70" stroke="#E5E7EB" strokeWidth="12" fill="transparent" />
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="#16A34A"
-                strokeWidth="12"
-                fill="transparent"
-                strokeDasharray={440}
-                strokeDashoffset={440 - (440 * progress) / 100}
-                strokeLinecap="round"
-                style={{ transition: "0.5s" }}
-              />
-            </svg>
-            <div className="position-absolute top-50 start-50 translate-middle fw-bold" style={{ fontSize: "1.6rem" }}>
-              {progress}%
-            </div>
-          </div>
-
-          <div className="small text-secondary">
-            {complete} / {total} steps completed
-          </div>
-        </motion.div>
-
-        <motion.div
-          variants={fade}
-          initial="hidden"
-          animate="show"
-          className="card border-0 shadow-lg p-4"
-          style={{ borderRadius: "14px" }}
-        >
-          <h5 className="fw-bold mb-3">Required Steps</h5>
-
-          {Object.keys(steps).map((key) => (
-            <div key={key} className="mb-2 d-flex align-items-center">
-              <input
-                type="checkbox"
-                className="form-check-input me-2"
-                checked={steps[key]}
-                onChange={() => toggleStep(key)}
-              />
-              <span className="text-capitalize">{key.replace(/_/g, " ")}</span>
-            </div>
-          ))}
-
-          <button className="btn btn-primary w-100 mt-3" onClick={saveAll}>
-            Save Steps
-          </button>
-        </motion.div>
-
-      </div>
-
-    </div>
-  </main>
-);
-
+    </main>
+  );
 }
 
 export default OneApplication;

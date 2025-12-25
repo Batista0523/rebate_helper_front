@@ -231,7 +231,7 @@ function CreateApplication() {
               </div>
 
               <div className="col-md-6">
-                <p className="mb-1 text-secondary small">Approved Rebate</p>
+                <p className="mb-1 text-secondary small">Eligible Rebate</p>
                 <input
                   className="form-control"
                   value={formData.approved_rebate_amount}

@@ -535,7 +535,7 @@ function CreateApplication() {
               type="number"
               step="0.01"
               className="form-control mb-2"
-              placeholder="Approved Rebate Amount"
+              placeholder="Eligile Rebate Amount"
               value={formData.approved_rebate_amount}
               onChange={(e) =>
                 handleInput("approved_rebate_amount", e.target.value)

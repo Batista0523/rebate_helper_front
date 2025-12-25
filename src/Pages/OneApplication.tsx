@@ -252,12 +252,10 @@ function OneApplication() {
         </div>
       </div>
 
-      {/* GRID LAYOUT SUPER PROFESIONAL */}
       <div
         className="row"
         style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "2rem" }}
       >
-        {/* LEFT GRID: FINANCIAL + CLIENT + NOTES */}
         <div className="d-flex flex-column gap-4">
           <motion.div
             variants={fade}
@@ -287,7 +285,7 @@ function OneApplication() {
               </div>
 
               <div className="d-flex justify-content-between mb-3">
-                <span className="text-secondary">Approved</span>
+                <span className="text-secondary">Eligible</span>
                 {!editMode ? (
                   <strong>{currency.format(approved)}</strong>
                 ) : (

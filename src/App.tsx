@@ -3,8 +3,9 @@ import Navbar from "./Components/Navbar";
 import Login from "./Pages/Login";
 import Home from "./Pages/Home";
 import { useAuth } from "./context/AuthContext";
+import Instructions from "./Pages/Instructions";
 // import Clients from "./Pages/Clients";
-import NewClient from "./Pages/NewClient";
+// import NewClient from "./Pages/NewClient";
 import OneApplication from "./Pages/OneApplication";
 import ApplicationsPage from "./Pages/Applications";
 import CreateApplication from "./Pages/ CreateApplication";
@@ -38,9 +39,10 @@ function App() {
         <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
         <Route path="/register" element={<GuestOnly><Register /></GuestOnly>} />
         {/* <Route path="/clients" element={<Clients />} /> */}
-        <Route path="/newClients" element={<NewClient />} />
+        {/* <Route path="/newClients" element={<NewClient />} /> */}
          <Route path="/applications_pages/:id" element={<OneApplication />} />
          <Route path="/newApplication" element={<CreateApplication />} />
+         <Route path="/instructions" element={<Instructions />} />
         <Route path="/applications_pages" element={<ApplicationsPage />} />
       </Routes>
     </>

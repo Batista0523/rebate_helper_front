@@ -83,8 +83,12 @@ function ApplicationsPage() {
     const dt = new Date(a.created_at);
     if (dt.getFullYear() !== currentYear) continue;
 
-    const offered = a.offered_rebate_amount ? Number(a.offered_rebate_amount) : 0;
-    const approved = a.approved_rebate_amount ? Number(a.approved_rebate_amount) : 0;
+    const offered = a.offered_rebate_amount
+      ? Number(a.offered_rebate_amount)
+      : 0;
+    const approved = a.approved_rebate_amount
+      ? Number(a.approved_rebate_amount)
+      : 0;
 
     ytdOffered += offered;
     ytdApproved += approved;
@@ -100,7 +104,6 @@ function ApplicationsPage() {
       initial="hidden"
       animate="show"
     >
-      {/* HEADER */}
       <div className="d-flex justify-content-between align-items-end mb-4">
         <div>
           <h1 className="h4">Applications</h1>
@@ -108,8 +111,14 @@ function ApplicationsPage() {
             Showing applications by client. Click a card to view full details.
           </div>
         </div>
-
-        <motion.div variants={rise} className="input-group" style={{ maxWidth: 320 }}>
+        <Link to="/newApplication">
+          <button className="btn btn-primary px-4">Create Application</button>
+        </Link>
+        <motion.div
+          variants={rise}
+          className="input-group"
+          style={{ maxWidth: 320 }}
+        >
           <span className="input-group-text">Search</span>
           <input
             className="form-control"
@@ -120,7 +129,6 @@ function ApplicationsPage() {
         </motion.div>
       </div>
 
-      {/* STATS */}
       <div className="row g-3 mb-4">
         <div className="col-md-4">
           <motion.div variants={popCard} className="card shadow-sm border-0">
@@ -145,7 +153,15 @@ function ApplicationsPage() {
           <motion.div variants={popCard} className="card shadow-sm border-0">
             <div className="card-body">
               <div className="small text-secondary">YTD Δ</div>
-              <div className={`h4 ${ytdDelta > 0 ? "text-success" : ytdDelta < 0 ? "text-danger" : ""}`}>
+              <div
+                className={`h4 ${
+                  ytdDelta > 0
+                    ? "text-success"
+                    : ytdDelta < 0
+                    ? "text-danger"
+                    : ""
+                }`}
+              >
                 {ytdDelta > 0 ? "+" : ""}
                 {currency.format(ytdDelta)}
               </div>
@@ -154,10 +170,8 @@ function ApplicationsPage() {
         </div>
       </div>
 
-   
       {error && <div className="alert alert-danger">{error}</div>}
 
-     
       <div className="row g-3">
         {filtered.map((a) => {
           const initials = a.full_name
@@ -173,7 +187,10 @@ function ApplicationsPage() {
                 to={`/applications_pages/${a.id}`}
                 className="text-decoration-none text-dark"
               >
-                <motion.div variants={popCard} className="card border-0 shadow-sm h-100">
+                <motion.div
+                  variants={popCard}
+                  className="card border-0 shadow-sm h-100"
+                >
                   <div className="card-body">
                     <div className="d-flex align-items-center mb-2">
                       <div

@@ -197,6 +197,25 @@ function OneApplication() {
                 {app.full_name}
               </h1>
               <div className="text-secondary">{app.address}</div>
+
+              <div className="d-flex gap-3 mt-3 flex-wrap">
+                <span className="badge text-bg-primary">
+                  Project:{" "}
+                  {currency.format(Number(app.project_amount_total || 0))}
+                </span>
+
+                <span className="badge text-bg-success">
+                  Eligible:{" "}
+                  {currency.format(Number(app.approved_rebate_amount || 0))}
+                </span>
+
+                <span className="badge text-bg-warning">
+                  Client Pays:{" "}
+                  {currency.format(
+                    Number(app.total_client_pay_after_rebate || 0)
+                  )}
+                </span>
+              </div>
             </>
           ) : (
             <>
@@ -304,6 +323,86 @@ function OneApplication() {
                 style={{ background: deltaStatus.color, fontSize: "1.1rem" }}
               >
                 {deltaStatus.text}
+              </div>
+            </div>
+          </motion.div>
+          <motion.div
+            variants={fade}
+            initial="hidden"
+            animate="show"
+            className="card border-0 shadow-lg p-4"
+            style={{ borderRadius: "14px" }}
+          >
+            <h4 className="fw-bold mb-3" style={{ color: "#0F172A" }}>
+              Project Financials
+            </h4>
+
+            <div className="row g-4">
+              <div className="col-md-4">
+                <p className="mb-1 text-secondary small">Project Amount</p>
+                {!editMode ? (
+                  <p className="fw-semibold">
+                    {currency.format(Number(app.project_amount_total || 0))}
+                  </p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.project_amount_total || ""}
+                    onChange={(e) =>
+                      handleInput("project_amount_total", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="col-md-4">
+                <p className="mb-1 text-secondary small">
+                  Client Pays After Rebate
+                </p>
+                {!editMode ? (
+                  <p className="fw-semibold">
+                    {currency.format(
+                      Number(app.total_client_pay_after_rebate || 0)
+                    )}
+                  </p>
+                ) : (
+                  <input
+                    className="form-control"
+                    value={formData.total_client_pay_after_rebate || ""}
+                    onChange={(e) =>
+                      handleInput(
+                        "total_client_pay_after_rebate",
+                        e.target.value
+                      )
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="col-md-4">
+                <p className="mb-1 text-secondary small">
+                  Disadvantaged Customer
+                </p>
+                {!editMode ? (
+                  <span
+                    className={`badge ${
+                      app.disadvantage ? "text-bg-success" : "text-bg-secondary"
+                    }`}
+                  >
+                    {app.disadvantage ? "Yes" : "No"}
+                  </span>
+                ) : (
+                  <select
+                    className="form-select"
+                    value={formData.disadvantage ? "yes" : "no"}
+                    onChange={(e) =>
+                      handleInput("disadvantage", e.target.value === "yes")
+                    }
+                  >
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                  </select>
+                )}
               </div>
             </div>
           </motion.div>
@@ -472,7 +571,6 @@ function OneApplication() {
             )}
           </motion.div>
 
-          {/* NOTES SECTION – NOW HERE ABOVE SIDEBAR NOT BELOW BOOLEAN */}
           <motion.div
             variants={fade}
             initial="hidden"

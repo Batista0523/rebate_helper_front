@@ -2,6 +2,20 @@ import { useEffect, useState, useMemo } from "react";
 import { motion, Variants } from "framer-motion";
 import { Link } from "react-router-dom";
 
+const STEP_FIELDS = [
+  "acknowledgment_form",
+  "system_total_capacity",
+  "invoice_or_contract",
+  "manual_j",
+  "name_plate_photos",
+  "system_installation_photos",
+  "decommissioning_before_photos_wide_shots",
+  "decommissioning_after_photos_wide_shots",
+  "decommissioning_before_photos_close_up_shots",
+  "decommissioning_after_photos_close_up_shots",
+  "decommissioning_checklist",
+] as const;
+
 type Application = {
   id: number;
   full_name: string;
@@ -9,6 +23,17 @@ type Application = {
   offered_rebate_amount?: number | null;
   approved_rebate_amount?: number | null;
   created_at?: string | null;
+  acknowledgment_form?: boolean;
+  system_total_capacity?: boolean;
+  invoice_or_contract?: boolean;
+  manual_j?: boolean;
+  name_plate_photos?: boolean;
+  system_installation_photos?: boolean;
+  decommissioning_before_photos_wide_shots?: boolean;
+  decommissioning_after_photos_wide_shots?: boolean;
+  decommissioning_before_photos_close_up_shots?: boolean;
+  decommissioning_after_photos_close_up_shots?: boolean;
+  decommissioning_checklist?: boolean;
 };
 
 const page: Variants = {
@@ -36,13 +61,21 @@ const popCard: Variants = {
 const toMoney = (v: number | string | null | undefined): number =>
   v == null ? 0 : Number(v);
 
+const getProgress = (app: Application) => {
+  const total = STEP_FIELDS.length;
+  const completed = STEP_FIELDS.filter((f) => Boolean(app[f])).length;
+  return Math.round((completed / total) * 100);
+};
+
 function ApplicationsPage() {
   const baseUrl = import.meta.env.VITE_BASE_URL as string;
+
   const [applications, setApplications] = useState<Application[]>([]);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+  const [selectedYear, setSelectedYear] = useState<number | "all">(currentYear);
+  const [selected, setSelected] = useState<number[]>([]);
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -63,26 +96,26 @@ function ApplicationsPage() {
     currency: "USD",
   });
 
-  // Build list of all years, including empty years
   const years = useMemo(() => {
     const appYears = applications
       .map((a) => (a.created_at ? Number(a.created_at.slice(0, 4)) : null))
       .filter(Boolean) as number[];
+
     const minYear = appYears.length ? Math.min(...appYears) : currentYear;
     const maxYear = Math.max(currentYear, ...appYears);
-    const allYears: number[] = [];
+
+    const allYears: (number | "all")[] = ["all"];
     for (let y = maxYear; y >= minYear; y--) allYears.push(y);
     return allYears;
   }, [applications, currentYear]);
 
-  // Filter apps by selected year
   const appsByYear = useMemo(() => {
+    if (selectedYear === "all") return applications;
     return applications.filter(
       (a) => a.created_at && Number(a.created_at.slice(0, 4)) === selectedYear
     );
   }, [applications, selectedYear]);
 
-  // Filter by search query
   const filteredApps = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return appsByYear;
@@ -91,7 +124,6 @@ function ApplicationsPage() {
     );
   }, [appsByYear, query]);
 
-  // YTD calculations
   const { ytdOffered, ytdApproved, ytdCount } = useMemo(() => {
     let offered = 0;
     let approved = 0;
@@ -108,6 +140,59 @@ function ApplicationsPage() {
 
   const ytdDelta = ytdApproved - ytdOffered;
 
+  const handleDuplicate = async (id: number) => {
+    const confirmDuplicate = window.confirm("Duplicate this application?");
+    if (!confirmDuplicate) return;
+
+    try {
+      const res = await fetch(`${baseUrl}/applications/${id}/duplicate`, {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setApplications((prev) => [data.payload, ...prev]);
+      } else {
+        alert("Failed to duplicate application");
+      }
+    } catch {
+      alert("Server error duplicating application");
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+  setSelected((prev) =>
+    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  );
+};
+
+const duplicateApp = async (id: number) => {
+  await fetch(`${baseUrl}/applications/${id}/duplicate`, { method: "POST" });
+  window.location.reload();
+};
+
+const deleteSelected = async () => {
+  const code = prompt("Enter delete code");
+  if (!code) return;
+
+  const res = await fetch(`${baseUrl}/applications/bulk-delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids: selected, code }),
+  });
+
+  const data = await res.json();
+  if (!data.success) {
+    alert("Invalid code or error");
+    return;
+  }
+
+  setSelected([]);
+  window.location.reload();
+};
+
+
   return (
     <motion.main
       className="container py-5"
@@ -122,79 +207,60 @@ function ApplicationsPage() {
             View applications by client. Click a card for full details.
           </p>
         </div>
+{selected.length > 0 && (
+  <div className="mb-3 d-flex gap-2">
+    <button className="btn btn-danger" onClick={deleteSelected}>
+      Delete selected ({selected.length})
+    </button>
+  </div>
+)}
 
         <motion.div
           className="d-flex flex-column flex-md-row align-items-md-end gap-3"
           variants={rise}
         >
-          <Link to="/newApplication" style={{ textDecoration: "none" }}>
-            <button
-              className="btn"
-              style={{
-                backgroundColor: "#fff",
-                color: "#0d6efd",
-                border: "1px solid #0d6efd",
-                padding: "1.6rem",
-                fontSize: "0.95rem",
-                fontWeight: 500,
-                borderRadius: "0.5rem",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                cursor: "pointer",
-                transition: "all 0.2s ease-in-out",
-                minWidth: "160px",
-                justifyContent: "center",
-                textDecoration: "none",
-              }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.backgroundColor = "#0d6efd";
-                btn.style.color = "#fff";
-                btn.style.textDecoration = "none";
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.backgroundColor = "#fff";
-                btn.style.color = "#0d6efd";
-                btn.style.textDecoration = "none";
-              }}
-            >
-        
-              New Application
-            </button>
+          <Link to="/newApplication" className="btn btn-outline-primary">
+            New Application
           </Link>
 
           <select
             className="form-select"
             value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
-            style={{ minWidth: 120 }}
+            onChange={(e) =>
+              setSelectedYear(
+                e.target.value === "all" ? "all" : Number(e.target.value)
+              )
+            }
+            style={{ minWidth: 140 }}
           >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
+            {years.map((y) =>
+              y === "all" ? (
+                <option key="all" value="all">
+                  All time
+                </option>
+              ) : (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              )
+            )}
           </select>
 
-          <div className="input-group" style={{ maxWidth: 300 }}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search by name or address..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              style={{ minWidth: 250 }}
-            />
-          </div>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search by name or address..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ minWidth: 250 }}
+          />
         </motion.div>
       </div>
 
       {ytdCount === 0 ? (
         <div className="alert alert-warning">
-          No rebate submitted in {selectedYear}.
+          No rebate submitted{" "}
+          {selectedYear === "all" ? "for all time" : `in ${selectedYear}`}.
         </div>
       ) : (
         <>
@@ -205,9 +271,7 @@ function ApplicationsPage() {
                 className="card shadow-sm border-0"
               >
                 <div className="card-body">
-                  <div className="small text-secondary">
-                    Year-to-Date Offered
-                  </div>
+                  <div className="small text-secondary">Total Offered</div>
                   <div className="h4">{currency.format(ytdOffered)}</div>
                   <div className="small text-secondary">{ytdCount} apps</div>
                 </div>
@@ -220,9 +284,7 @@ function ApplicationsPage() {
                 className="card shadow-sm border-0"
               >
                 <div className="card-body">
-                  <div className="small text-secondary">
-                    Year To Date Eligible
-                  </div>
+                  <div className="small text-secondary">Total Approved</div>
                   <div className="h4">{currency.format(ytdApproved)}</div>
                 </div>
               </motion.div>
@@ -234,16 +296,10 @@ function ApplicationsPage() {
                 className="card shadow-sm border-0"
               >
                 <div className="card-body">
-                  <div className="small text-secondary">
-                    Year-to-Date Difference
-                  </div>
+                  <div className="small text-secondary">Difference</div>
                   <div
                     className={`h4 ${
-                      ytdDelta > 0
-                        ? "text-success"
-                        : ytdDelta < 0
-                        ? "text-danger"
-                        : ""
+                      ytdDelta < 0 ? "text-danger" : "text-success"
                     }`}
                   >
                     {ytdDelta > 0 ? "+" : ""}
@@ -256,6 +312,7 @@ function ApplicationsPage() {
 
           <div className="row g-3">
             {filteredApps.map((a) => {
+              const progress = getProgress(a);
               const initials = a.full_name
                 .split(" ")
                 .map((p) => p[0])
@@ -301,6 +358,44 @@ function ApplicationsPage() {
                           <strong>
                             {currency.format(toMoney(a.approved_rebate_amount))}
                           </strong>
+                        </div>
+
+                        <div className="mt-3">
+                          <div className="d-flex justify-content-between mb-1">
+                            <span className="small text-secondary">
+                              Progress
+                            </span>
+                            <span className="small fw-semibold">
+                              {progress}%
+                            </span>
+                          </div>
+                          <div className="progress" style={{ height: 8 }}>
+                            <div
+                              className={`progress-bar ${
+                                progress === 100
+                                  ? "bg-success"
+                                  : progress >= 50
+                                  ? "bg-primary"
+                                  : "bg-warning"
+                              }`}
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center mt-3">
+                            <button
+                              className="btn btn-sm btn-outline-secondary"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDuplicate(a.id);
+                              }}
+                            >
+                              Duplicate
+                            </button>
+
+                            <span className="small text-secondary">
+                              {getProgress(a)}%
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </motion.div>

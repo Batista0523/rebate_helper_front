@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const baseUrl = import.meta.env.VITE_BASE_URL 
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 type ApplicationForm = {
   full_name: string;
@@ -186,7 +185,6 @@ function CreateApplication() {
         <div className="col-lg-6">
           <div className="card shadow-sm p-4">
             <h5 className="fw-bold mb-3">Project & Financials</h5>
-
 
             <input
               type="number"

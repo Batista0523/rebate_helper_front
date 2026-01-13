@@ -161,16 +161,6 @@ function ApplicationsPage() {
     }
   };
 
-  const toggleSelect = (id: number) => {
-  setSelected((prev) =>
-    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-  );
-};
-
-const duplicateApp = async (id: number) => {
-  await fetch(`${baseUrl}/applications/${id}/duplicate`, { method: "POST" });
-  window.location.reload();
-};
 
 const deleteSelected = async () => {
   const code = prompt("Enter delete code");

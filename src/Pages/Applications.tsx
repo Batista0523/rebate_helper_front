@@ -344,7 +344,7 @@ const deleteSelected = async () => {
                         </div>
 
                         <div className="d-flex justify-content-between">
-                          <span className="text-secondary small">Approved</span>
+                          <span className="text-secondary small">Eligible</span>
                           <strong>
                             {currency.format(toMoney(a.approved_rebate_amount))}
                           </strong>
